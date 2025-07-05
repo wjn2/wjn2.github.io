@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>狼人杀身份抽取</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#8B0000',
+            secondary: '#2C3E50',
+            accent: '#D35400',
+            neutral: '#ECF0F1',
+            'neutral-dark': '#34495E',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.5s ease-in-out',
+            'slide-up': 'slideUp 0.5s ease-out',
+            'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+          },
+          keyframes: {
+            fadeIn: {
+              '0%': { opacity: '0' },
+              '100%': { opacity: '1' },
+            },
+            slideUp: {
+              '0%': { transform: 'translateY(20px)', opacity: '0' },
+              '100%': { transform: 'translateY(0)', opacity: '1' },
+            }
+          }
+        },
+      }
+    }
+  </script>
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .text-shadow {
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      .card-hover {
+        transition: all 0.3s ease;
+      }
+      .card-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      }
+      .bg-blur {
+        backdrop-filter: blur(8px);
+      }
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-neutral-dark to-secondary min-h-screen text-neutral font-sans">
+  <!-- 页面容器 -->
+  <div class="container mx-auto px-4 py-8 max-w-6xl">
+    
+    <!-- 标题区域 -->
+    <header class="text-center mb-12 animate-fade-in">
+      <h1 class="text-[clamp(2.5rem,5vw,4rem)] font-bold text-neutral mb-4 tracking-tight text-shadow">
+        <i class="fa fa-paw mr-3 text-accent"></i>狼人杀身份抽取
+      </h1>
+      <p class="text-lg md:text-xl text-neutral/80 max-w-2xl mx-auto">
+        支持多人同时进入，自定义游戏人数和角色配置
+      </p>
+    </header>
+    
+    <!-- 主内容区 -->
+    <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <!-- 左侧配置区 -->
+      <section class="lg:col-span-1 bg-neutral-dark/80 backdrop-blur-md rounded-xl p-6 shadow-2xl animate-slide-up">
+        <h2 class="text-2xl font-bold mb-6 text-neutral flex items-center">
+          <i class="fa fa-sliders mr-2 text-accent"></i>游戏配置
+        </h2>
+        
+        <!-- 玩家人数设置 -->
+        <div class="mb-8">
+          <label class="block text-lg font-medium mb-2 text-neutral/90">玩家人数</label>
+          <div class="flex items-center">
+            <button id="decrease-btn" class="bg-primary/80 hover:bg-primary text-white p-2 rounded-l-lg transition-all">
+              <i class="fa fa-minus"></i>
+            </button>
+            <input type="number" id="player-count" min="6" max="18" value="12" 
+                   class="w-full bg-neutral/10 border border-neutral/30 text-neutral px-4 py-2 text-center focus:outline-none focus:ring-2 focus:ring-accent">
+            <button id="increase-btn" class="bg-primary/80 hover:bg-primary text-white p-2 rounded-r-lg transition-all">
+              <i class="fa fa-plus"></i>
+            </button>
+          </div>
+          <p class="text-sm text-neutral/60 mt-1">支持6-18人游戏</p>
+        </div>
+        
+        <!-- 角色配置 -->
+        <div class="mb-8">
+          <h3 class="text-xl font-semibold mb-4 text-neutral">角色配置</h3>
+          <div class="space-y-4">
+            <div class="role-item flex items-center justify-between">
+              <div class="flex items-center">
+                <i class="fa fa-user-secret text-red-500 mr-2"></i>
+                <span class="text-neutral/90">狼人</span>
+              </div>
+              <div class="flex items-center">
+                <button class="role-decrease bg-neutral/20 hover:bg-neutral/30 text-neutral p-1 rounded-l transition-all">
+                  <i class="fa fa-minus text-xs"></i>
+                </button>
+                <input type="number" class="role-count w-12 bg-neutral/10 border border-neutral/30 text-neutral text-center focus:outline-none focus:ring-1 focus:ring-accent" min="0" max="18" value="4">
+                <button class="role-increase bg-neutral/20 hover:bg-neutral/30 text-neutral p-1 rounded-r transition-all">
+                  <i class="fa fa-plus text-xs"></i>
+                </button>
+              </div>
+            </div>
+            
+            <div class="role-item flex items-center justify-between">
+              <div class="flex items-center">
+                <i class="fa fa-user-md text-blue-400 mr-2"></i>
+                <span class="text-neutral/90">预言家</span>
+              </div>
+              <div class="flex items-center">
+                <button class="role-decrease bg-neutral/20 hover:bg-neutral/30 text-neutral p-1 rounded-l transition-all">
+                  <i class="fa fa-minus text-xs"></i>
+                </button>
+                <input type="number" class="role-count w-12 bg-neutral/10 border border-neutral/30 text-neutral text-center focus:outline-none focus:ring-1 focus:ring-accent" min="0" max="18" value="1">
+                <button class="role-increase bg-neutral/20 hover:bg-neutral/30 text-neutral p-1 rounded-r transition-all">
+                  <i class="fa fa-plus text-xs"></i>
+                </button>
+              </div>
+            </div>
+            
+            <div class="role-item flex items-center justify-between">
+              <div class="flex items-center">
+                <i class="fa fa-heartbeat text-red-400 mr-2"></i>
+                <span class="text-neutral/90">女巫</span>
+              </div>
+              <div class="flex items-center">
+                <button class="role-decrease bg-neutral/20 hover:bg-neutral/30 text-neutral p-1 rounded-l transition-all">
+                  <i class="fa fa-minus text-xs"></i>
+                </button>
+                <input type="number" class="role-count w-12 bg-neutral/10 border border-neutral/30 text-neutral text-center focus:outline-none focus:ring-1 focus:ring-accent" min="0" max="18" value="1">
+                <button class="role-increase bg-neutral/20 hover:bg-neutral/30 text-neutral p-1 rounded-r transition-all">
+                  <i class="fa fa-plus text-xs"></i>
+                </button>
+              </div>
+            </div>
+            
+            <div class="role-item flex items-center justify-between">
+              <div class="flex items-center">
+                <i class="fa fa-shield text-yellow-400 mr-2"></i>
+                <span class="text-neutral/90">守卫</span>
+              </div>
+              <div class="flex items-center">
+                <button class="role-decrease bg-neutral/20 hover:bg-neutral/30 text-neutral p-1 rounded-l transition-all">
+                  <i class="fa fa-minus text-xs"></i>
+                </button>
+                <input type="number" class="role-count w-12 bg-neutral/10 border border-neutral/30 text-neutral text-center focus:outline-none focus:ring-1 focus:ring-accent" min="0" max="18" value="1">
+                <button class="role-increase bg-neutral/20 hover:bg-neutral/30 text-neutral p-1 rounded-r transition-all">
+                  <i class="fa fa-plus text-xs"></i>
+                </button>
+              </div>
+            </div>
+            
+            <div class="role-item flex items-center justify-between">
+              <div class="flex items-center">
+                <i class="fa fa-bullhorn text-green-400 mr-2"></i>
+                <span class="text-neutral/90">猎人</span>
+              </div>
+              <div class="flex items-center">
+                <button class="role-decrease bg-neutral/20 hover:bg-neutral/30 text-neutral p-1 rounded-l transition-all">
+                  <i class="fa fa-minus text-xs"></i>
+                </button>
+                <input type="number" class="role-count w-12 bg-neutral/10 border border-neutral/30 text-neutral text-center focus:outline-none focus:ring-1 focus:ring-accent" min="0" max="18" value="1">
+                <button class="role-increase bg-neutral/20 hover:bg-neutral/30 text-neutral p-1 rounded-r transition-all">
+                  <i class="fa fa-plus text-xs"></i>
+                </button>
+              </div>
+            </div>
+            
+            <div class="role-item flex items-center justify-between">
+              <div class="flex items-center">
+                <i class="fa fa-users text-gray-400 mr-2"></i>
+                <span class="text-neutral/90">村民</span>
+              </div>
+              <div class="flex items-center">
+                <button class="role-decrease bg-neutral/20 hover:bg-neutral/30 text-neutral p-1 rounded-l transition-all">
+                  <i class="fa fa-minus text-xs"></i>
+                </button>
+                <input type="number" class="role-count w-12 bg-neutral/10 border border-neutral/30 text-neutral text-center focus:outline-none focus:ring-1 focus:ring-accent" min="0" max="18" value="4">
+                <button class="role-increase bg-neutral/20 hover:bg-neutral/30 text-neutral p-1 rounded-r transition-all">
+                  <i class="fa fa-plus text-xs"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 配置操作按钮 -->
+        <div class="flex flex-col space-y-3">
+          <button id="randomize-roles-btn" class="bg-accent hover:bg-accent/90 text-white py-3 px-4 rounded-lg transition-all font-medium flex items-center justify-center">
+            <i class="fa fa-random mr-2"></i> 随机配置
+          </button>
+          <button id="save-config-btn" class="bg-secondary hover:bg-secondary/90 text-white py-3 px-4 rounded-lg transition-all font-medium flex items-center justify-center">
+            <i class="fa fa-save mr-2"></i> 保存配置
+          </button>
+          <button id="start-game-btn" class="bg-primary hover:bg-primary/90 text-white py-4 px-4 rounded-lg transition-all font-bold text-lg flex items-center justify-center animate-pulse-slow">
+            <i class="fa fa-play-circle mr-2"></i> 开始游戏
+          </button>
+        </div>
+      </section>
+      
+      <!-- 右侧游戏区 -->
+      <section class="lg:col-span-2 bg-neutral-dark/80 backdrop-blur-md rounded-xl p-6 shadow-2xl animate-slide-up">
+        <h2 class="text-2xl font-bold mb-6 text-neutral flex items-center">
+          <i class="fa fa-gamepad mr-2 text-accent"></i>游戏区域
+        </h2>
+        
+        <!-- 房间ID和加入按钮 -->
+        <div class="mb-6 flex flex-col sm:flex-row gap-4 items-center">
+          <div class="flex-1 bg-neutral/10 border border-neutral/30 rounded-lg p-4 flex items-center">
+            <span class="text-neutral/70 mr-3">房间ID:</span>
+            <span id="room-id" class="text-xl font-bold text-accent">ABC123</span>
+            <button id="copy-room-id-btn" class="ml-auto bg-neutral/20 hover:bg-neutral/30 text-neutral p-2 rounded-lg transition-all">
+              <i class="fa fa-copy"></i>
+            </button>
+          </div>
+          <button id="join-room-btn" class="bg-primary hover:bg-primary/90 text-white py-3 px-6 rounded-lg transition-all font-medium flex items-center">
+            <i class="fa fa-sign-in mr-2"></i> 加入房间
+          </button>
+        </div>
+        
+        <!-- 玩家列表 -->
+        <div class="mb-6">
+          <h3 class="text-xl font-semibold mb-3 text-neutral flex items-center">
+            <i class="fa fa-users mr-2 text-blue-400"></i>玩家列表
+            <span id="player-count-display" class="ml-2 text-sm bg-neutral/20 text-neutral/70 px-2 py-1 rounded-full">0/12</span>
+          </h3>
+          <div id="players-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-64 overflow-y-auto pr-2">
+            <!-- 玩家卡片将通过JS动态生成 -->
+          </div>
+        </div>
+        
+        <!-- 状态显示 -->
+        <div id="game-status" class="mb-6 bg-neutral/10 border border-neutral/30 rounded-lg p-4 min-h-24 flex items-center justify-center text-neutral/80">
+          <p>等待玩家加入房间...</p>
+        </div>
+        
+        <!-- 抽取身份按钮 -->
+        <div class="text-center">
+          <button id="draw-identity-btn" class="bg-accent hover:bg-accent/90 text-white py-4 px-8 rounded-lg transition-all font-bold text-lg disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+            <i class="fa fa-hand-paper-o mr-2"></i> 抽取身份
+          </button>
+        </div>
+        
+        <!-- 抽取结果弹窗 (默认隐藏) -->
+        <div id="result-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 hidden">
+          <div class="bg-neutral-dark rounded-xl p-8 max-w-md w-full mx-4 transform transition-all">
+            <div class="text-center">
+              <div id="result-icon" class="text-6xl mb-4 text-primary"></div>
+              <h3 class="text-2xl font-bold mb-2 text-neutral" id="result-title">你的身份</h3>
+              <p class="text-xl mb-6 text-neutral/80" id="result-role">狼人</p>
+              <p class="text-neutral/70 mb-6" id="result-description">你是狼人阵营，每晚可以与其他狼人一起选择一名玩家击杀。</p>
+              <button id="close-result-btn" class="bg-primary hover:bg-primary/90 text-white py-3 px-6 rounded-lg transition-all font-medium">
+                确认并隐藏
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+    
+    <!-- 页脚 -->
+    <footer class="mt-12 text-center text-neutral/60 text-sm">
+      <p>© 2025 狼人杀身份抽取器 | 支持多人在线游戏体验</p>
+    </footer>
+  </div>
+
+  <script>
+    // 角色配置和游戏状态
+    const gameState = {
+      playerCount: 12,
+      roles: {
+        '狼人': 4,
+        '预言家': 1,
+        '女巫': 1,
+        '守卫': 1,
+        '猎人': 1,
+        '村民': 4
+      },
+      roomId: generateRoomId(),
+      players: [],
+      identities: [],
+      isGameStarted: false
+    };
+    
+    // 角色图标映射
+    const roleIcons = {
+      '狼人': 'fa fa-user-secret text-red-500',
+      '预言家': 'fa fa-user-md text-blue-400',
+      '女巫': 'fa fa-heartbeat text-red-400',
+      '守卫': 'fa fa-shield text-yellow-400',
+      '猎人': 'fa fa-bullhorn text-green-400',
+      '村民': 'fa fa-users text-gray-400'
+    };
+    
+    // 角色描述映射
+    const roleDescriptions = {
+      '狼人': '你是狼人阵营，每晚可以与其他狼人一起选择一名玩家击杀。',
+      '预言家': '你是好人阵营，每晚可以查验一名玩家的身份，知道TA是狼人还是好人。',
+      '女巫': '你是好人阵营，拥有一瓶解药和一瓶毒药。解药可以救被狼人击杀的玩家，毒药可以毒死一名玩家。',
+      '守卫': '你是好人阵营，每晚可以守护一名玩家，该玩家不会被狼人击杀（但不能连续两晚守护同一人）。',
+      '猎人': '你是好人阵营，当你被狼人击杀或被投票出局时，可以开枪带走一名玩家。',
+      '村民': '你是好人阵营，没有特殊技能，但需要通过分析和投票找出狼人。'
+    };
+    
+    // DOM元素
+    const playerCountInput = document.getElementById('player-count');
+    const decreaseBtn = document.getElementById('decrease-btn');
+    const increaseBtn = document.getElementById('increase-btn');
+    const roleCountInputs = document.querySelectorAll('.role-count');
+    const randomizeRolesBtn = document.getElementById('randomize-roles-btn');
+    const saveConfigBtn = document.getElementById('save-config-btn');
+    const startGameBtn = document.getElementById('start-game-btn');
+    const joinRoomBtn = document.getElementById('join-room-btn');
+    const drawIdentityBtn = document.getElementById('draw-identity-btn');
+    const copyRoomIdBtn = document.getElementById('copy-room-id-btn');
+    const roomIdElement = document.getElementById('room-id');
+    const playerCountDisplay = document.getElementById('player-count-display');
+    const playersContainer = document.getElementById('players-container');
+    const gameStatusElement = document.getElementById('game-status');
+    const resultModal = document.getElementById('result-modal');
+    const resultIcon = document.getElementById('result-icon');
+    const resultTitle = document.getElementById('result-title');
+    const resultRole = document.getElementById('result-role');
+    const resultDescription = document.getElementById('result-description');
+    const closeResultBtn = document.getElementById('close-result-btn');
+    
+    // 初始化页面
+    function init() {
+      updatePlayerCountDisplay();
+      updateRoleInputs();
+      generatePlayers();
+      updateRoomId();
+      
+      // 事件监听
+      decreaseBtn.addEventListener('click', decreasePlayerCount);
+      increaseBtn.addEventListener('click', increasePlayerCount);
+      playerCountInput.addEventListener('change', handlePlayerCountChange);
+      
+      document.querySelectorAll('.role-decrease').forEach((btn, index) => {
+        btn.addEventListener('click', () => decreaseRoleCount(index));
+      });
+      
+      document.querySelectorAll('.role-increase').forEach((btn, index) => {
+        btn.addEventListener('click', () => increaseRoleCount(index));
+      });
+      
+      roleCountInputs.forEach((input, index) => {
+        input.addEventListener('change', () => handleRoleCountChange(index));
+      });
+      
+      randomizeRolesBtn.addEventListener('click', randomizeRoles);
+      saveConfigBtn.addEventListener('click', saveConfig);
+      startGameBtn.addEventListener('click', startGame);
+      joinRoomBtn.addEventListener('click', joinRoom);
+      drawIdentityBtn.addEventListener('click', drawIdentity);
+      copyRoomIdBtn.addEventListener('click', copyRoomId);
+      closeResultBtn.addEventListener('click', closeResultModal);
+      
+      // 模拟玩家加入
+      simulatePlayerJoins();
+    }
+    
+    // 生成随机房间ID
+    function generateRoomId() {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      let result = '';
+      for (let i = 0; i < 5; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return result;
+    }
+    
+    // 更新房间ID显示
+    function updateRoomId() {
+      roomIdElement.textContent = gameState.roomId;
+    }
+    
+    // 复制房间ID到剪贴板
+    function copyRoomId() {
+      navigator.clipboard.writeText(gameState.roomId)
+        .then(() => {
+          const originalText = copyRoomIdBtn.innerHTML;
+          copyRoomIdBtn.innerHTML = '<i class="fa fa-check"></i>';
+          setTimeout(() => {
+            copyRoomIdBtn.innerHTML = originalText;
+          }, 2000);
+        })
+        .catch(err => {
+          console.error('复制失败: ', err);
+        });
+    }
+    
+    // 增减玩家数量
+    function decreasePlayerCount() {
+      if (gameState.playerCount > 6) {
+        gameState.playerCount--;
+        updatePlayerCountDisplay();
+        generatePlayers();
+      }
+    }
+    
+    function increasePlayerCount() {
+      if (gameState.playerCount < 18) {
+        gameState.playerCount++;
+        updatePlayerCountDisplay();
+        generatePlayers();
+      }
+    }
+    
+    function handlePlayerCountChange() {
+      let count = parseInt(playerCountInput.value);
+      if (isNaN(count) || count < 6) {
+        count = 6;
+      } else if (count > 18) {
+        count = 18;
+      }
+      gameState.playerCount = count;
+      playerCountInput.value = count;
+      updatePlayerCountDisplay();
+      generatePlayers();
+    }
+    
+    // 更新玩家数量显示
+    function updatePlayerCountDisplay() {
+      playerCountDisplay.textContent = `${gameState.players.length}/${gameState.playerCount}`;
+    }
+    
+    // 更新角色输入框
+    function updateRoleInputs() {
+      const roleNames = Object.keys(gameState.roles);
+      roleCountInputs.forEach((input, index) => {
+        input.value = gameState.roles[roleNames[index]];
+      });
+    }
+    
+    // 增减角色数量
+    function decreaseRoleCount(index) {
+      const roleNames = Object.keys(gameState.roles);
+      const roleName = roleNames[index];
+      if (gameState.roles[roleName] > 0) {
+        gameState.roles[roleName]--;
+        roleCountInputs[index].value = gameState.roles[roleName];
+      }
+    }
+    
+    function increaseRoleCount(index) {
+      const roleNames = Object.keys(gameState.roles);
+      const roleName = roleNames[index];
+      // 确保角色总数不超过玩家数量
+      const currentTotal = getTotalRoles();
+      if (currentTotal < gameState.playerCount) {
+        gameState.roles[roleName]++;
+        roleCountInputs[index].value = gameState.roles[roleName];
+      }
+    }
+    
+    function handleRoleCountChange(index) {
+      const roleNames = Object.keys(gameState.roles);
+      const roleName = roleNames[index];
+      let count = parseInt(roleCountInputs[index].value);
+      
+      if (isNaN(count) || count < 0) {
+        count = 0;
+      }
+      
+      // 确保角色总数不超过玩家数量
+      const currentTotal = getTotalRoles() - gameState.roles[roleName];
+      if (currentTotal + count > gameState.playerCount) {
+        count = gameState.playerCount - currentTotal;
+      }
+      
+      gameState.roles[roleName] = count;
+      roleCountInputs[index].value = count;
+    }
+    
+    // 获取角色总数
+    function getTotalRoles() {
+      return Object.values(gameState.roles).reduce((total, count) => total + count, 0);
+    }
+    
+    // 随机分配角色
+    function randomizeRoles() {
+      // 简单的随机分配算法
+      const playerCount = gameState.playerCount;
+      
+      // 默认配置
+      const defaultConfig = {
+        6: { '狼人': 2, '预言家': 1, '女巫': 1, '村民': 2 },
+        7: { '狼人': 2, '预言家': 1, '女巫': 1, '猎人': 1, '村民': 2 },
+        8: { '狼人': 3, '预言家': 1, '女巫': 1, '村民': 3 },
+        9: { '狼人': 3, '预言家': 1, '女巫': 1, '猎人': 1, '村民': 3 },
+        10: { '狼人': 3, '预言家': 1, '女巫': 1, '守卫': 1, '村民': 4 },
+        11: { '狼人': 4, '预言家': 1, '女巫': 1, '守卫': 1, '村民': 4 },
+        12: { '狼人': 4, '预言家': 1, '女巫': 1, '守卫': 1, '猎人': 1, '村民': 5 },
+        13: { '狼人': 4, '预言家': 1, '女巫': 1, '守卫': 1, '猎人': 1, '村民': 6 },
+        14: { '狼人': 5, '预言家': 1, '女巫': 1, '守卫': 1, '猎人': 1, '村民': 6 },
+        15: { '狼人': 5, '预言家': 1, '女巫': 1, '守卫': 1, '猎人': 1, '村民': 7 },
+        16: { '狼人': 5, '预言家': 1, '女巫': 1, '守卫': 1, '猎人': 1, '村民': 8 },
+        17: { '狼人': 6, '预言家': 1, '女巫': 1, '守卫': 1, '猎人': 1, '村民': 8 },
+        18: { '狼人': 6, '预言家': 1, '女巫': 1, '守卫': 1, '猎人': 1, '村民': 9 }
+      };
+      
+      // 使用适合玩家数量的默认配置
+      const defaultRoles = defaultConfig[playerCount] || defaultConfig[12];
+      
+      // 复制默认配置到游戏状态
+      gameState.roles = {
+        '狼人': defaultRoles['狼人'] || 0,
+        '预言家': defaultRoles['预言家'] || 0,
+        '女巫': defaultRoles['女巫'] || 0,
+        '守卫': defaultRoles['守卫'] || 0,
+        '猎人': defaultRoles['猎人'] || 0,
+        '村民': defaultRoles['村民'] || 0
+      };
+      
+      // 如果默认配置中的角色总数不足，则增加村民数量
+      let total = getTotalRoles();
+      if (total < playerCount) {
+        gameState.roles['村民'] += playerCount - total;
+      }
+      
+      updateRoleInputs();
+    }
+    
+    // 保存配置（在实际应用中可以保存到本地存储或服务器）
+    function saveConfig() {
+      // 简单提示
+      alert('配置已保存！');
+    }
+    
+    // 生成玩家卡片
+    function generatePlayers() {
+      playersContainer.innerHTML = '';
+      
+      // 生成已加入的玩家
+      for (let i = 0; i < gameState.players.length; i++) {
+        const player = gameState.players[i];
+        addPlayerCard(player.id, player.name, player.status);
+      }
+      
+      // 生成空位
+      const emptySlots = gameState.playerCount - gameState.players.length;
+      for (let i = 0; i < emptySlots; i++) {
+        addEmptyPlayerCard();
+      }
+    }
+    
+    // 添加玩家卡片
+    function addPlayerCard(id, name, status = 'waiting') {
+      const card = document.createElement('div');
+      card.className = 'bg-neutral/10 border border-neutral/30 rounded-lg p-3 flex flex-col items-center card-hover';
+      
+      if (status === 'ready') {
+        card.classList.add('border-green-500', 'bg-green-500/10');
+      }
+      
+      card.innerHTML = `
+        <div class="w-12 h-12 bg-neutral/20 rounded-full flex items-center justify-center mb-2">
+          <i class="fa fa-user text-neutral/70"></i>
+        </div>
+        <h4 class="text-neutral font-medium text-center">${name}</h4>
+        <p class="text-xs text-neutral/60">${status === 'ready' ? '已准备' : '等待中'}</p>
+      `;
+      
+      playersContainer.appendChild(card);
+    }
+    
+    // 添加空位卡片
+    function addEmptyPlayerCard() {
+      const card = document.createElement('div');
+      card.className = 'bg-neutral/10 border border-neutral/30 border-dashed rounded-lg p-3 flex flex-col items-center justify-center h-24';
+      card.innerHTML = `
+        <i class="fa fa-plus text-neutral/40 mb-1"></i>
+        <p class="text-xs text-neutral/40">等待玩家加入</p>
+      `;
+      playersContainer.appendChild(card);
+    }
+    
+    // 模拟玩家加入
+    function simulatePlayerJoins() {
+      // 随机加入1-3名玩家
+      const numPlayers = Math.floor(Math.random() * 3) + 1;
+      
+      for (let i = 0; i < numPlayers; i++) {
+        setTimeout(() => {
+          const playerId = Date.now() + i;
+          const playerName = `玩家${gameState.players.length + 1}`;
+          
+          gameState.players.push({
+            id: playerId,
+            name: playerName,
+            status: 'waiting'
+          });
+          
+          generatePlayers();
+          updatePlayerCountDisplay();
+          
+          // 更新游戏状态
+          if (gameState.players.length === gameState.playerCount) {
+            gameStatusElement.innerHTML = '<p class="text-green-400">房间已满，可以开始游戏</p>';
+            startGameBtn.disabled = false;
+            startGameBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+          } else {
+            gameStatusElement.innerHTML = `<p>等待玩家加入房间... (${gameState.players.length}/${gameState.playerCount})</p>`;
+          }
+        }, i * 1500);
+      }
+    }
+    
+    // 加入房间
+    function joinRoom() {
+      if (gameState.isGameStarted) {
+        alert('游戏已开始，无法加入');
+        return;
+      }
+      
+      if (gameState.players.length >= gameState.playerCount) {
+        alert('房间已满，无法加入');
+        return;
+      }
+      
+      const playerName = prompt('请输入你的昵称:', `玩家${gameState.players.length + 1}`);
+      
+      if (playerName && playerName.trim() !== '') {
+        const playerId = Date.now();
+        
+        gameState.players.push({
+          id: playerId,
+          name: playerName.trim(),
+          status: 'ready'
+        });
+        
+        generatePlayers();
+        updatePlayerCountDisplay();
+        
+        // 更新游戏状态
+        if (gameState.players.length === gameState.playerCount) {
+          gameStatusElement.innerHTML = '<p class="text-green-400">房间已满，可以开始游戏</p>';
+          startGameBtn.disabled = false;
+          startGameBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        } else {
+          gameStatusElement.innerHTML = `<p>等待玩家加入房间... (${gameState.players.length}/${gameState.playerCount})</p>`;
+        }
+      }
+    }
+    
+    // 开始游戏
+    function startGame() {
+      if (gameState.players.length < gameState.playerCount) {
+        alert(`需要${gameState.playerCount}名玩家才能开始游戏`);
+        return;
+      }
+      
+      // 打乱玩家顺序
+      gameState.players = shuffleArray(gameState.players);
+      
+      // 生成身份牌
+      generateIdentities();
+      
+      // 更新游戏状态
+      gameState.isGameStarted = true;
+      gameStatusElement.innerHTML = '<p class="text-yellow-400">游戏已开始，可以抽取身份</p>';
+      
+      // 启用抽取按钮
+      drawIdentityBtn.disabled = false;
+      drawIdentityBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+      
+      // 更新玩家卡片显示
+      generatePlayers();
+    }
+    
+    // 生成身份牌
+    function generateIdentities() {
+      const identities = [];
+      
+      // 添加所有角色到身份牌组
+      for (const [role, count] of Object.entries(gameState.roles)) {
+        for (let i = 0; i < count; i++) {
+          identities.push(role);
+        }
+      }
+      
+      // 洗牌
+      gameState.identities = shuffleArray(identities);
+    }
+    
+    // 洗牌算法
+    function shuffleArray(array) {
+      const newArray = [...array];
+      for (let i = newArray.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+      }
+      return newArray;
+    }
+    
+    // 抽取身份
+    function drawIdentity() {
+      if (gameState.identities.length === 0) {
+        alert('身份牌已抽取完毕');
+        return;
+      }
+      
+      // 随机抽取一个身份
+      const randomIndex = Math.floor(Math.random() * gameState.identities.length);
+      const role = gameState.identities.splice(randomIndex, 1)[0];
+      
+      // 显示抽取结果
+      resultIcon.className = `text-6xl mb-4 ${roleIcons[role]}`;
+      resultRole.textContent = role;
+      resultDescription.textContent = roleDescriptions[role];
+      resultModal.classList.remove('hidden');
+      
+      // 更新游戏状态
+      if (gameState.identities.length === 0) {
+        gameStatusElement.innerHTML = '<p class="text-accent">所有身份已抽取完毕，游戏正式开始！</p>';
+        drawIdentityBtn.disabled = true;
+        drawIdentityBtn.classList.add('opacity-50', 'cursor-not-allowed');
+      } else {
+        gameStatusElement.innerHTML = `<p class="text-neutral/80">还剩 ${gameState.identities.length} 张身份牌</p>`;
+      }
+    }
+    
+    // 关闭结果弹窗
+    function closeResultModal() {
+      resultModal.classList.add('hidden');
+    }
+    
+    // 页面加载完成后初始化
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
+    
